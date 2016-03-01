@@ -1,6 +1,6 @@
-# empty webapp
+# scribenerd
 
-an empty webapp
+transcribes conversations, assuming one microphone per participant, using the webkit voice recognition API.
 
 ## setup
 

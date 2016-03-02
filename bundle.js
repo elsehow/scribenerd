@@ -12,7 +12,7 @@ var store={name:undefined,conversation:[],inputVal:'',inProgress:''};var loop=ma
 document.querySelector('#app').appendChild(loop.target);function render(state){if(state.name)return transcriptV();else return signupV(); // view for a signup
 function signupV(){ // collect name + assure we get microphone access
 return h('div',[h('h1','need stuff from ya'),h('input',{placeholder:'your name',onkeyup:inputKeyup}),h('button',{disabled:!state.inputVal,onclick:submit},'join')]);} // view for the transcript
-function transcriptV(){var s=_.sortBy(state.conversation,'receivedAt');console.log(s);return h('div',{style:{'font-family':'sans-serif','padding':'3%'}},[headerV(),s.map(chatLine),inProgressV()]); // a single chat
+function transcriptV(){var s=_.sortBy(state.conversation,'receivedAt');console.log(s);return h('div',{style:{'font-family':'sans-serif','padding':'3%'}},[h('a',{href:'https://github.com/elsehow/scribenerd'},'source'),headerV(),s.map(chatLine),inProgressV()]); // a single chat
 function chatLine(m){return h('div',[h('span',{style:{'font-weight':'bold'}},`${ m.name }: `),h('span',m.said)]);} // the recognition currently in progress
 function inProgressV(){return h('small',{style:{'color':'lightgray'}},state.inProgress);} // the header (tells you your name)
 function headerV(){return h('h1',`transcript (you are ${ state.name })`);}}} // 3  updating the state

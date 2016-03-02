@@ -110,6 +110,7 @@ function render (state) {
         'font-family': 'sans-serif',
         'padding': '3%',
       }},[
+          h('a', {href: 'https://github.com/elsehow/scribenerd'}, 'source'),
         headerV(),
         s.map(chatLine),
         inProgressV(),

@@ -4,12 +4,11 @@
     "watch": "watchify index.js -o bundle.js",
     "serve": "ecstatic",
     "dev": "npm run watch & npm run serve",
-    "build": "browserify index.js | babel> bundle.js; html-inline -i index.html -o dist/index.html"
+    "build": "browserify index.js | java -jar compiler.jar   --language_out=ES5 > bundle.js; html-inline -i index.html -o dist/index.html"
   },
   "author": "elsehow",
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "babel-cli": "^6.6.0",
     "ecstatic": "^1.4.0",
     "html-inline": "^1.2.0",
     "watchify": "^3.7.0"

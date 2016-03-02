@@ -4,7 +4,7 @@
     "watch": "watchify index.js -o bundle.js",
     "serve": "ecstatic",
     "dev": "npm run watch & npm run serve",
-    "build": "browserify index.js | babel> bundle.js; html-inline -i index.html -o dist/index.html; scp dist/index.html sawstudents@cosmopol.is:webapps/coolworld_home/talk-time/index.html"
+      "build": "browserify index.js | java -jar compiler.jar --language_out=ES5 > bundle.js; html-inline -i index.html -o dist/index.html; scp dist/index.html sawstudents@cosmopol.is:webapps/coolworld_home/talk-time/index.html"
   },
   "author": "elsehow",
   "license": "BSD-2-Clause",

@@ -21,6 +21,10 @@ function recognitionS () {
   // return the stream of recognition results
   return resultS = Kefir.stream(emitter => {
       recognition.onresult = (event) => emitter.emit(event)
+      recognition.onend = () => {
+          console.log('would have stopped, will try to restart now')
+          recognition.start()   
+      }
       // and start the recognition
       recognition.start();
   })
@@ -33,8 +37,8 @@ function transcriptS (s) {
     return s.map(r => r[0].transcript).skipDuplicates()
 }
 
-function finalTranscriptS (op, lastRecs) {
-    var finals = lastRecs.filter(r => r.isFinal == op)
+function finalTranscriptS (lastRecs) {
+    var finals = lastRecs.filter(r => r.isFinal)
     return transcriptS(finals)
 }
 
@@ -80,7 +84,12 @@ function render (state) {
         var s = _.sortBy(state.conversation, 'receivedAt')
         return h('div', [
             h('h1', `transcript (you are ${state.name})`),
-            s.map(t => h('p', `${t.name}: ${t.said}`)),
+            s.map(t => {
+                return h('div', [
+                    h('span', {style: {'font-weight': 'bold'}}, `${t.name}: `),
+                    h('span', t.said)
+                ])
+            }),
             h('small', state.inProgress),
         ])
     // otherwise,
@@ -119,6 +128,12 @@ function setInProgress (t) {
     loop.update(store)
 }
 
+function speak (t) {
+    var msg = new SpeechSynthesisUtterance(t)
+    msg.lang = 'en-GB';
+    window.speechSynthesis.speak(msg); 
+}
+
 
 function submit () {
    // save my name, save my name...
@@ -126,27 +141,23 @@ function submit () {
     // start recognitions stream
     var recS = recognitionS()
     // final transcripts
-    var finals = finalTranscriptS(true, recS)
-    // in-progress transcripts
-    var inprog = finalTranscriptS(false, recS)
+    var finals = finalTranscriptS(recS)
     // start to post final transcripts to server, with my name attached
     var p = _.partial(post, store.name)
     finals.onValue(p)
     // start displaying in-progress recognitions
     // but remove then wen we see a final one
-    finalTranscriptS(false, recS).onValue(setInProgress)
+    transcriptS(recS).onValue(setInProgress)
     // done
     loop.update(store)
 }
 
-// TODO actually 'join' and view the transcript page
-// TODO display interim values?
-
 // turn transcription events from server into a log of all transcripts
 socketTranscriptS()
     .onValue(setConversation)
-
-
+socketTranscriptS()
+    .map(t => t.said)
+    .onValue(speak)
 
 
 // TODO indicate whether or not we have the proper permissions

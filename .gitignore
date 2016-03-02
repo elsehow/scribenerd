@@ -1,7 +1,3 @@
 node_modules/
-dist/
-logs/
-.*.swp
 .DS_Store
-.sass-cache*
 npm-debug.log

@@ -1,14 +1,17 @@
 var Kefir = require('kefir')
 , _ = require('lodash')
+, h = require('virtual-dom/h')
+, main = require('main-loop')
+, EventEmitter = require('events').EventEmitter
+, dispatcher = new EventEmitter()
 , indraURI = 'http://indra.webfactional.com'
 , client = require('request-json').createClient(indraURI)
 , appEventString = 'scribenerd' // we use this event name for pub-sub
-, EventEmitter = require('events').EventEmitter
-, dispatcher = new EventEmitter()
-
-console.log('starting')
 
 
+
+
+console.log('booting')
 //  1  voice rec
 
 // returns a stream of recognition events
@@ -71,42 +74,68 @@ var store = {
     inProgress: '',
 }
 
-var h = require('virtual-dom/h')
-var main = require('main-loop')
 var loop = main(store, render, require('virtual-dom'))
+var d = document.getElementById('app')//.appendChild(loop.target)
 document.querySelector('#app').appendChild(loop.target)
 
 function render (state) {
-    // if we've given ourself a name
-    if (state.name) {
-        // we show the transcript view
-        var s = _.sortBy(state.conversation, 'receivedAt')
-        return h('div', [
-            h('h1', `transcript (you are ${state.name})`),
-            s.map(t => {
-                return h('div', [
-                    h('span', {style: {'font-weight': 'bold'}}, `${t.name}: `),
-                    h('span', t.said)
-                ])
-            }),
-            h('small', state.inProgress),
-        ])
-    // otherwise,
-    } else {
-        // collect name + assure we get microphone access
-        return h('div', [
-            h('h1', 'need stuff from ya'),
-            h('input', {
-                placeholder: 'your name',
-                onkeyup:      inputKeyup,
-            }),
-            h('button', {
-                disabled:     !state.inputVal,
-                onclick:      submit,
-            }, 'join')
-        ])
+
+  if (state.name)
+    return transcriptV()
+  else
+    return signupV()
+
+  // view for a signup
+  function signupV () {
+      // collect name + assure we get microphone access
+      return h('div', [
+          h('h1', 'need stuff from ya'),
+          h('input', {
+              placeholder: 'your name',
+              onkeyup:      inputKeyup,
+          }),
+          h('button', {
+              disabled:     !state.inputVal,
+              onclick:      submit,
+          }, 'join')
+      ])
+  }
+
+  // view for the transcript
+  function transcriptV () {
+
+    var s = _.sortBy(state.conversation, 'receivedAt')
+
+      console.log(s)
+
+    return h('div', { style: {
+        'font-family': 'sans-serif',
+        'padding': '3%',
+      }},[
+        headerV(),
+        s.map(chatLine),
+        inProgressV(),
+    ])
+
+    // a single chat
+    function chatLine (m) {
+      return h('div', [
+             h('span', {style: {'font-weight': 'bold'}}, `${m.name}: `),
+             h('span', m.said)
+      ])
     }
+    // the recognition currently in progress
+    function inProgressV () {
+      return h('small', { style: {'color': 'lightgray'}}, state.inProgress)
+    }
+    // the header (tells you your name)
+    function headerV () {
+      return h('h1', `transcript (you are ${state.name})`)
+    }
+  }
 }
+
+
 
 
 // 3  updating the state
@@ -151,14 +180,14 @@ function submit () {
     loop.update(store)
 }
 
-// turn transcription events from server into a log of all transcripts
+
+
+// entrypoint
 socketTranscriptS()
     .onValue(setConversation)
 socketTranscriptS()
     .map(t => t.said)
     .onValue(speak)
 
-
-// TODO indicate whether or not we have the proper permissions
-// TODO assure socket connected, audio accessed, name chosen
-// TODO handle all errors from everywhere
+// TODO inline + minify all
+console.log('booted :)')

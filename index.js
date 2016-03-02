@@ -9,8 +9,6 @@ var Kefir = require('kefir')
 , appEventString = 'scribenerd' // we use this event name for pub-sub
 
 
-
-
 console.log('booting')
 //  1  voice rec
 
